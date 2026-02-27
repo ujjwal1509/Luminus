@@ -1,0 +1,105 @@
+/* ── Masonry wrapper ─────────────────────────────────────────────────────────
+   Outer container. Clips cards that scroll past the top edge.
+   contain:layout+paint keeps browser reflow isolated to this subtree.      */
+.msn-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    overflow: hidden;
+    contain: layout paint;
+}
+
+/* ── Column ──────────────────────────────────────────────────────────────────
+   Each column is a fixed-width flex child. paddingTop is set inline to
+   create the staircase / step offset between columns.                       */
+.msn-col {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    /* overflow visible so the step offset doesn't get clipped */
+    overflow: visible;
+}
+
+/* ── Scrolling track ─────────────────────────────────────────────────────────
+   Contains BOTH strips stacked vertically.
+   Translates upward by 50% of its own height (= one strip) in a loop.
+   Only transform is animated → GPU composited, no layout recalc.           */
+.msn-track {
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+    animation: msn-scroll-up linear infinite;
+}
+
+@keyframes msn-scroll-up {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-50%); }
+}
+
+/* ── Strip ───────────────────────────────────────────────────────────────────
+   One set of cards. Two strips are stacked inside .msn-track.               */
+.msn-strip {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* ── Card wrapper ────────────────────────────────────────────────────────────
+   Matches original .item-wrapper. Padding gives the visible gap between
+   cards within a column.                                                     */
+.item-wrapper {
+    width: 100%;
+    padding: 6px 0;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* ── Card surface ────────────────────────────────────────────────────────────
+   Matches original .item-img exactly — same border-radius, background,
+   border, and hover lift.                                                    */
+.item-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(8, 6, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.item-img:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(123, 94, 255, 0.15);
+}
+
+/* ── Pause on hover ──────────────────────────────────────────────────────────
+   Pausing the whole column (not just the card) avoids mid-scroll jumps.     */
+.msn-col:hover .msn-track {
+    animation-play-state: paused;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────
+   On narrow screens reduce the step offset so cards stay visible.           */
+@media (max-width: 768px) {
+    .msn-wrapper {
+        gap: 8px;
+    }
+
+    .item-wrapper {
+        padding: 4px 0;
+    }
+
+    .item-img {
+        border-radius: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .msn-wrapper {
+        gap: 6px;
+    }
+}
