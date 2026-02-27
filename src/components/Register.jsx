@@ -1,6 +1,6 @@
 const DETAILS = [
     { label: 'Date', value: 'March 28 – 30, 2025' },
-    { label: 'Venue', value: 'Aurora Campus, Main Auditorium' },
+    { label: 'Venue', value: 'RNSIT campus, Main Auditorium' },
     { label: 'Entry Fee', value: '₹299 / participant' },
     { label: 'Team Size', value: '1 – 4 members' },
 ];
