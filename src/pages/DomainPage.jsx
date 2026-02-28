@@ -77,11 +77,13 @@ export default function DomainPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
     const domain = DOMAINS.find(d => d.slug === slug);
-    const domainEvents = EVENTS.filter(e => e.domainSlug === slug);
-    const total = domainEvents.length;
+  const domainEvents = EVENTS.filter(e => e.domainSlug === slug);
+  const total = domainEvents.length;
 
-    const [activeIdx, setActiveIdx] = useState(0);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [isMobile, setIsMobile] = useState(
+    () => (typeof window !== 'undefined' ? window.innerWidth < 768 : false),
+  );
 
     const activeIdxRef = useRef(0);
     const isAnimating = useRef(false);
@@ -92,11 +94,15 @@ export default function DomainPage() {
         domainEvents.map((_, i) => useMotionValue(getInitialAngle(i, total)))
     );
 
-    useEffect(() => {
-        const onResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
+  useEffect(() => {
+    const onResize = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768);
+      }
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
     const rotateTo = useCallback((targetIdx) => {
         if (!total || isAnimating.current) return;
@@ -143,7 +149,71 @@ export default function DomainPage() {
         if (Math.abs(delta) > 50) delta < 0 ? goNext() : goPrev();
     };
 
-    if (!domain) return null;
+  if (!domain) {
+    return (
+      <div style={{ background: '#050508', minHeight: '100vh', color: 'white' }}>
+        <Navbar activeSection="" />
+        <main
+          className="section"
+          style={{
+            minHeight: 'calc(100vh - 80px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingTop: 96,
+          }}
+        >
+          <div className="section-inner" style={{ textAlign: 'center' }}>
+            <p
+              style={{
+                fontFamily:
+                  'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
+                fontSize: 11,
+                letterSpacing: '0.35em',
+                textTransform: 'uppercase',
+                color: 'rgba(156,163,175,0.9)',
+                marginBottom: 12,
+              }}
+            >
+              // Domain not found
+            </p>
+            <h1 className="text-h1" style={{ marginBottom: 16 }}>
+              Unknown sector.
+            </h1>
+            <p
+              style={{
+                maxWidth: 480,
+                margin: '0 auto 24px',
+                color: 'rgba(156,163,175,0.9)',
+                lineHeight: 1.7,
+              }}
+            >
+              This domain does not exist or has been retired. You can safely jump back to the
+              events grid.
+            </p>
+            <a
+              href="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '12px 24px',
+                borderRadius: 999,
+                border: '1px solid rgba(148,163,184,0.7)',
+                fontSize: 12,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                color: 'white',
+              }}
+            >
+              Back to Home
+            </a>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
     return (
         <div style={{ background: '#050508', minHeight: '100vh', color: 'white' }}>
@@ -230,12 +300,16 @@ export default function DomainPage() {
                 {/* ── Main carousel ── */}
                 <main
                     style={{
-                        flex: 1, position: 'relative',
-                        display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center',
-                        paddingTop: isMobile ? 0 : 40,
+                        flex: 1,
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingTop: isMobile ? 96 : 40,
                         overflow: 'hidden',
-                        userSelect: 'none', touchAction: 'none',
+                        userSelect: 'none',
+                        touchAction: 'none',
                         minHeight: isMobile ? 'calc(100vh - 80px)' : undefined,
                     }}
                     onPointerDown={onPointerDown}
@@ -285,82 +359,193 @@ export default function DomainPage() {
                     )}
 
                     {/* Cards */}
-                    <div style={{ flex: 1, width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ position: 'relative', width: 1, height: 1 }}>
-                            {domainEvents.map((event, idx) => {
-                                const isActive = idx === activeIdx;
-                                const dist = Math.abs(Math.min(Math.abs(idx - activeIdx), total - Math.abs(idx - activeIdx)));
-                                return (
-                                    <CarouselCard
-                                        key={event.id}
-                                        angleMv={anglesRef.current[idx]}
-                                        isMobile={isMobile}
-                                        isActive={isActive}
-                                        isAdjacent={dist === 1}
-                                        onHover={() => {
-                                            if (isMobile || hoverFired.current || isAnimating.current || isActive) return;
-                                            hoverFired.current = true;
-                                            rotateTo(idx);
-                                            setTimeout(() => { hoverFired.current = false; }, 800);
-                                        }}
-                                    >
-                                        <EventCard event={event} isActive={isActive} />
-                                    </CarouselCard>
-                                );
-                            })}
-                        </div>
+                    <div
+                        style={{
+                            flex: 1,
+                            width: '100%',
+                            maxWidth: isMobile ? 420 : '100%',
+                            position: 'relative',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: isMobile ? '16px 16px 0' : 0,
+                        }}
+                    >
+                        {total === 0 ? (
+                            <div
+                                style={{
+                                    maxWidth: 420,
+                                    width: '100%',
+                                    padding: '24px 20px',
+                                    borderRadius: 16,
+                                    border: '1px solid rgba(255,255,255,0.12)',
+                                    background:
+                                        'linear-gradient(160deg, rgba(15,23,42,0.9), rgba(15,23,42,0.98))',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                <p
+                                    style={{
+                                        fontFamily:
+                                            'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
+                                        fontSize: 11,
+                                        letterSpacing: '0.3em',
+                                        textTransform: 'uppercase',
+                                        color: 'rgba(148,163,184,0.9)',
+                                        marginBottom: 12,
+                                    }}
+                                >
+                                    // No events published yet
+                                </p>
+                                <p
+                                    style={{
+                                        fontSize: 14,
+                                        lineHeight: 1.7,
+                                        color: 'rgba(209,213,219,0.9)',
+                                    }}
+                                >
+                                    Events for this domain are still being configured. Check back
+                                    soon, or explore another domain from the home page.
+                                </p>
+                            </div>
+                        ) : isMobile ? (
+                            <div style={{ width: '100%', maxWidth: 420 }}>
+                                <EventCard event={domainEvents[activeIdx]} isActive />
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    position: 'relative',
+                                    width: 1,
+                                    height: 1,
+                                }}
+                            >
+                                {domainEvents.map((event, idx) => {
+                                    const isActive = idx === activeIdx;
+                                    const dist = Math.abs(
+                                        Math.min(
+                                            Math.abs(idx - activeIdx),
+                                            total - Math.abs(idx - activeIdx),
+                                        ),
+                                    );
+                                    return (
+                                        <CarouselCard
+                                            key={event.id}
+                                            angleMv={anglesRef.current[idx]}
+                                            isMobile={isMobile}
+                                            isActive={isActive}
+                                            isAdjacent={dist === 1}
+                                            onHover={() => {
+                                                if (
+                                                    isMobile ||
+                                                    hoverFired.current ||
+                                                    isAnimating.current ||
+                                                    isActive
+                                                )
+                                                    return;
+                                                hoverFired.current = true;
+                                                rotateTo(idx);
+                                                setTimeout(() => {
+                                                    hoverFired.current = false;
+                                                }, 800);
+                                            }}
+                                        >
+                                            <EventCard event={event} isActive={isActive} />
+                                        </CarouselCard>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* Navigation Hub — dots + sector label */}
-                    <div style={{
-                        height: 112, width: '100%',
-                        display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'flex-end',
-                        zIndex: 40, paddingBottom: 16,
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '12px 24px' }}>
-                            {domainEvents.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => rotateTo(idx)}
-                                    style={{
-                                        position: 'relative',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        width: 24, height: 24,
-                                        background: 'none', border: 'none', cursor: 'pointer',
-                                    }}
-                                >
-                                    <div style={{
-                                        borderRadius: '50%',
-                                        transition: 'all 0.3s',
-                                        width: idx === activeIdx ? 10 : 6,
-                                        height: idx === activeIdx ? 10 : 6,
-                                        background: idx === activeIdx ? 'white' : 'rgba(255,255,255,0.7)',
-                                        boxShadow: idx === activeIdx ? '0 0 20px rgba(255,255,255,1)' : 'none',
-                                    }} />
-                                    {idx === activeIdx && (
-                                        <motion.div
-                                            layoutId="nav-glow"
-                                            style={{
-                                                position: 'absolute', inset: 0,
-                                                border: '1px solid rgba(255,255,255,0.3)',
-                                                borderRadius: '50%',
-                                            }}
-                                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
-                                </button>
-                            ))}
+                    {total > 0 && (
+                      <div
+                        style={{
+                          height: 112,
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          zIndex: 40,
+                          paddingBottom: 16,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 24,
+                            padding: '12px 24px',
+                          }}
+                        >
+                          {domainEvents.map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => rotateTo(idx)}
+                              style={{
+                                position: 'relative',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: 24,
+                                height: 24,
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  borderRadius: '50%',
+                                  transition: 'all 0.3s',
+                                  width: idx === activeIdx ? 10 : 6,
+                                  height: idx === activeIdx ? 10 : 6,
+                                  background:
+                                    idx === activeIdx
+                                      ? 'white'
+                                      : 'rgba(255,255,255,0.7)',
+                                  boxShadow:
+                                    idx === activeIdx
+                                      ? '0 0 20px rgba(255,255,255,1)'
+                                      : 'none',
+                                }}
+                              />
+                              {idx === activeIdx && (
+                                <motion.div
+                                  layoutId="nav-glow"
+                                  style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    border: '1px solid rgba(255,255,255,0.3)',
+                                    borderRadius: '50%',
+                                  }}
+                                  transition={{
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 30,
+                                  }}
+                                />
+                              )}
+                            </button>
+                          ))}
                         </div>
-                        <p style={{
+                        <p
+                          style={{
                             marginTop: 8,
                             fontFamily: 'Space Mono, monospace',
-                            fontSize: 8, color: 'rgba(255,255,255,0.1)',
-                            letterSpacing: '0.6em', textTransform: 'uppercase',
-                        }}>
-                            Sector {activeIdx + 1} // {total}
+                            fontSize: 8,
+                            color: 'rgba(255,255,255,0.1)',
+                            letterSpacing: '0.6em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          Sector {activeIdx + 1} // {total}
                         </p>
-                    </div>
+                      </div>
+                    )}
                 </main>
             </div>
         </div>
