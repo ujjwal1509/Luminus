@@ -44,20 +44,44 @@ export default function Domains() {
                         </p>
 
                         <div className="domains-list">
-                            {DOMAINS.map((d) => (
-                                <button
-                                    key={d.slug}
-                                    onClick={() => navigate(`/domain/${d.slug}`)}
-                                    className="domains-list-btn"
-                                >
-                                    {d.icon} {d.name}
-                                </button>
-                            ))}
+                            {DOMAINS.length === 0 ? (
+                                <p style={{ color: 'var(--text-secondary)' }}>
+                                    Domains will be announced soon. Check back for the full grid of events.
+                                </p>
+                            ) : (
+                                DOMAINS.map((d) => (
+                                    <button
+                                        key={d.slug}
+                                        type="button"
+                                        onClick={() => navigate(`/domain/${d.slug}`)}
+                                        className="domains-list-btn"
+                                    >
+                                        {d.icon} {d.name}
+                                    </button>
+                                ))
+                            )}
                         </div>
                     </div>
 
                     <div className="domains-swap-stage">
-                        <Masonry items={items} />
+                        {items.length === 0 ? (
+                            <div
+                                className="glass-card"
+                                style={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                <p style={{ color: 'var(--text-secondary)' }}>
+                                    Once domains are live, a dynamic event grid will appear here.
+                                </p>
+                            </div>
+                        ) : (
+                            <Masonry items={items} />
+                        )}
                     </div>
 
                 </div>

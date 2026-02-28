@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ParticleCanvas from './components/ParticleCanvas';
 import Navbar from './components/Navbar';
@@ -6,9 +6,11 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Domains from './components/Domains';
 import Register from './components/Register';
-import DomainPage from './pages/DomainPage';
-import EventPage from './pages/EventPage';
+import NotFoundPage from './pages/NotFoundPage';
 import luminusLogo from './assets/luminus_logo.png';
+
+const DomainPage = lazy(() => import('./pages/DomainPage'));
+const EventPage = lazy(() => import('./pages/EventPage'));
 
 // ── Home layout ───────────────────────────────────────────────────────────────
 function HomePage() {
@@ -55,8 +57,8 @@ function HomePage() {
     const tick = () => {
       cx += (tx - cx) * 0.09;
       cy += (ty - cy) * 0.09;
-      glow.style.left = cx + 'px';
-      glow.style.top = cy + 'px';
+      glow.style.setProperty('--glow-x', `${cx}px`);
+      glow.style.setProperty('--glow-y', `${cy}px`);
       raf = requestAnimationFrame(tick);
     };
     window.addEventListener('mousemove', onMove, { passive: true });
@@ -85,8 +87,25 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/domain/:slug" element={<DomainPage />} />
-      <Route path="/event/:slug" element={<EventPage />} />
+      <Route
+        path="/domain/:slug"
+        element={
+          <Suspense fallback={<div style={{ minHeight: '60vh' }} />}
+          >
+            <DomainPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/event/:slug"
+        element={
+          <Suspense fallback={<div style={{ minHeight: '60vh' }} />}
+          >
+            <EventPage />
+          </Suspense>
+        }
+      />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

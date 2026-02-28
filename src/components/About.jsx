@@ -1,4 +1,6 @@
-import Lanyard from './Lanyard';
+import { Suspense, lazy } from 'react';
+
+const Lanyard = lazy(() => import('./Lanyard'));
 
 const HACKATHON_TRACKS = [
     {
@@ -62,9 +64,24 @@ export default function About() {
                         </p>
                     </div>
 
-                    {/* Lanyard in right column — replaces 3D model placeholder */}
+                    {/* Lanyard in right column — lazy-loaded 3D module */}
                     <div className="lanyard-container reveal reveal-delay-3">
-                        <Lanyard />
+                        <Suspense
+                            fallback={
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: 24,
+                                        background: 'radial-gradient(circle at 20% 0%, rgba(123,94,255,0.25), rgba(4,3,10,0.9))',
+                                        border: '1px solid rgba(255,255,255,0.06)',
+                                        boxShadow: '0 18px 40px rgba(0,0,0,0.6)',
+                                    }}
+                                />
+                            }
+                        >
+                            <Lanyard />
+                        </Suspense>
                     </div>
 
                 </div>
