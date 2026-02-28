@@ -105,7 +105,7 @@ export default function About() {
                     <div style={{
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: 24,
+                        gap: 120,
                         justifyContent: 'center',
                         alignItems: 'stretch',
                     }}>
@@ -114,25 +114,26 @@ export default function About() {
                                 key={track.id}
                                 className={`reveal reveal-delay-${i + 2}`}
                                 style={{
-                                    flex: '1 1 280px',
-                                    maxWidth: 340,
-                                    minWidth: 260,
+                                    flex: '1 1 360px',
+                                    maxWidth: 420,
+                                    minWidth: 300,
+                                    minHeight: 480,
                                     position: 'relative',
                                     borderRadius: 20,
                                     background: 'rgba(8,6,20,0.85)',
                                     border: `1px solid rgba(${track.accentRgb},0.25)`,
                                     backdropFilter: 'blur(16px)',
                                     overflow: 'hidden',
-                                    padding: '32px 28px 28px',
+                                    padding: '40px 32px 32px',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: 16,
+                                    gap: 20,
                                     transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
                                     cursor: 'default',
                                 }}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.transform = 'translateY(-8px)';
-                                    e.currentTarget.style.boxShadow = `0 20px 48px rgba(${track.accentRgb},0.18)`;
+                                    e.currentTarget.style.boxShadow = `0 24px 56px rgba(${track.accentRgb},0.2)`;
                                     e.currentTarget.style.borderColor = `rgba(${track.accentRgb},0.55)`;
                                 }}
                                 onMouseLeave={e => {
