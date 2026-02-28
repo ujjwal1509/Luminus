@@ -1,6 +1,131 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// ── Seeded hash ───────────────────────────────────────────────────────────────
+const seededHash = (str, offset = 0) => {
+    let h = offset * 2654435761;
+    for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 2654435761);
+    return (h >>> 0) / 0xffffffff;
+};
+
+// ── StarBanner ────────────────────────────────────────────────────────────────
+function StarBanner({ title, isActive }) {
+    const uid = 'sb' + Math.abs(
+        title.split('').reduce((a, c) => Math.imul(a ^ c.charCodeAt(0), 2654435761), 0)
+    ).toString(36);
+
+    const stars = useMemo(() => Array.from({ length: 65 }, (_, i) => ({
+        x: seededHash(title, i * 3 + 5) * 320,
+        y: seededHash(title, i * 3 + 6) * 148,
+        r: seededHash(title, i * 3 + 7) > 0.9 ? 1.8 : seededHash(title, i * 3 + 7) > 0.7 ? 0.9 : 0.45,
+        o: 0.18 + seededHash(title, i * 3 + 8) * 0.72,
+        hue: seededHash(title, i * 3 + 9),
+    })), [title]);
+
+    const words = title.split(' ');
+    const lines = [];
+    let current = '';
+    for (const w of words) {
+        if ((current + ' ' + w).trim().length > 13) {
+            if (current) lines.push(current.trim());
+            current = w;
+        } else {
+            current = (current + ' ' + w).trim();
+        }
+    }
+    if (current) lines.push(current.trim());
+
+    const totalH = 148;
+    const lineH = 30;
+    const startY = totalH / 2 - ((lines.length - 1) * lineH) / 2 + 8;
+    const maxLen = Math.max(...lines.map(l => l.length));
+    const baseFontSize = lines.length === 1 ? 28 : lines.length === 2 ? 24 : 20;
+    const fontSizeByWidth = Math.floor(280 / (maxLen * 0.58));
+    const fontSize = Math.min(baseFontSize, fontSizeByWidth);
+
+    return (
+        <svg width="100%" height="100%" viewBox="0 0 320 148" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+            <defs>
+                <radialGradient id={`bg-${uid}`} cx="50%" cy="45%" r="75%">
+                    <stop offset="0%" stopColor="#0d0f2a" />
+                    <stop offset="55%" stopColor="#080a1c" />
+                    <stop offset="100%" stopColor="#04050f" />
+                </radialGradient>
+                <radialGradient id={`nebula-${uid}`} cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#3b4bc8" stopOpacity="0.22" />
+                    <stop offset="50%" stopColor="#6d28d9" stopOpacity="0.12" />
+                    <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+                </radialGradient>
+                <radialGradient id={`nebula2-${uid}`} cx="70%" cy="30%" r="40%">
+                    <stop offset="0%" stopColor="#1d4ed8" stopOpacity="0.14" />
+                    <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+                </radialGradient>
+                <linearGradient id={`title-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#e0f2ff" />
+                    <stop offset="35%" stopColor="#93c5fd" />
+                    <stop offset="70%" stopColor="#818cf8" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                </linearGradient>
+                <filter id={`tglow-${uid}`} x="-25%" y="-60%" width="150%" height="220%">
+                    <feGaussianBlur stdDeviation="4" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+                <filter id={`sglow-${uid}`}>
+                    <feGaussianBlur stdDeviation="0.9" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+                <linearGradient id={`shimmer-${uid}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="transparent" />
+                    <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.95" />
+                    <stop offset="100%" stopColor="transparent" />
+                </linearGradient>
+            </defs>
+
+            <rect width="320" height="148" fill={`url(#bg-${uid})`} />
+            <ellipse cx="155" cy="74" rx="140" ry="60" fill={`url(#nebula-${uid})`} />
+            <ellipse cx="240" cy="45" rx="90" ry="40" fill={`url(#nebula2-${uid})`} />
+
+            {stars.map((s, i) => {
+                const color = s.hue > 0.85 ? '#93c5fd' : s.hue > 0.7 ? '#a5b4fc' : s.hue > 0.55 ? '#c4b5fd' : '#ffffff';
+                return (
+                    <circle key={i} cx={s.x} cy={s.y} r={s.r}
+                        fill={color} opacity={s.o}
+                        filter={s.r > 1.4 ? `url(#sglow-${uid})` : undefined}
+                    />
+                );
+            })}
+
+            <line x1="20" y1={startY - 22} x2="300" y2={startY - 22} stroke="#4f6ef7" strokeWidth="0.5" opacity="0.22" />
+            <line x1="20" y1={startY + lines.length * lineH + 6} x2="300" y2={startY + lines.length * lineH + 6} stroke="#4f6ef7" strokeWidth="0.5" opacity="0.22" />
+            <polygon points="14,74 19,68 24,74 19,80" fill="#60a5fa" opacity="0.4" />
+            <polygon points="296,74 301,68 306,74 301,80" fill="#60a5fa" opacity="0.4" />
+
+            {lines.map((line, i) => {
+                const ls = line.length > 12 ? 0.5 : line.length > 9 ? 1 : 2;
+                return (
+                    <text key={i}
+                        x="160" y={startY + i * lineH}
+                        textAnchor="middle"
+                        fontSize={fontSize}
+                        fontFamily="'Orbitron', monospace"
+                        fontWeight="900"
+                        letterSpacing={ls}
+                        fill={`url(#title-${uid})`}
+                        filter={`url(#tglow-${uid})`}
+                    >
+                        {line.toUpperCase()}
+                    </text>
+                );
+            })}
+
+            {isActive && (
+                <rect x="0" y="0" width="320" height="2.5" fill={`url(#shimmer-${uid})`} opacity="1" />
+            )}
+        </svg>
+    );
+}
+
+// ── EventCard ─────────────────────────────────────────────────────────────────
 export default function EventCard({ event, isActive }) {
     const navigate = useNavigate();
     const cardRef = useRef(null);
@@ -21,113 +146,124 @@ export default function EventCard({ event, isActive }) {
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
         setTilt({
-            x: ((e.clientY - cy) / (rect.height / 2)) * 6,
-            y: -((e.clientX - cx) / (rect.width / 2)) * 6,
+            x: ((e.clientY - cy) / (rect.height / 2)) * 4,
+            y: -((e.clientX - cx) / (rect.width / 2)) * 4,
         });
-    };
-
-    const handleMouseLeave = () => {
-        setTilt({ x: 0, y: 0 });
-        setIsHovered(false);
     };
 
     return (
         <div
             ref={cardRef}
-            style={{ height: '100%', width: '100%', perspective: '1000px', transformStyle: 'preserve-3d' }}
+            style={{ height: '100%', width: '100%', perspective: '1000px' }}
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={handleMouseLeave}
+            onMouseLeave={() => { setTilt({ x: 0, y: 0 }); setIsHovered(false); }}
         >
-            <div
-                style={{
-                    position: 'relative',
-                    borderRadius: 20,
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '100%',
-                    background: '#0f1018',
-                    border: isActive ? '2px solid rgba(168,85,247,0.7)' : '1px solid rgba(255,255,255,0.05)',
-                    boxShadow: isActive ? '0 0 30px rgba(168,85,247,0.2), 0 0 60px rgba(168,85,247,0.08)' : 'none',
-                    transform: isActive ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` : 'none',
-                    transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.4s ease-out',
-                    transformStyle: 'preserve-3d',
-                }}
-            >
-                {/* Image */}
-                <div style={{ position: 'relative', overflow: 'hidden', height: 200, flexShrink: 0 }}>
-                    <img
-                        src={event.image || 'https://picsum.photos/seed/placeholder/800/600'}
-                        alt={event.title}
-                        style={{
-                            width: '100%', height: '100%', objectFit: 'cover',
-                            transform: isActive && isHovered ? 'scale(1.08)' : 'scale(1)',
-                            transition: 'transform 0.7s ease',
-                        }}
-                        referrerPolicy="no-referrer"
-                        onError={(e) => { e.target.src = 'https://picsum.photos/seed/placeholder/800/600'; }}
-                    />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0f1018, transparent, transparent)', opacity: 0.6 }} />
+            <div style={{
+                position: 'relative',
+                borderRadius: 16,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                background: 'linear-gradient(170deg, #0d0f2a 0%, #080a1c 55%, #04050f 100%)',
+                border: isActive ? '1px solid rgba(99,120,245,0.6)' : '1px solid rgba(99,120,245,0.12)',
+                boxShadow: isActive
+                    ? '0 0 30px rgba(79,110,247,0.28), 0 0 65px rgba(109,40,217,0.10), inset 0 1px 0 rgba(147,197,253,0.10)'
+                    : '0 0 12px rgba(79,110,247,0.08), inset 0 1px 0 rgba(255,255,255,0.03)',
+                transform: isActive ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` : 'none',
+                transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.5s ease-out',
+            }}>
 
-                    {/* Badges */}
-                    <div style={{ position: 'absolute', top: 12, left: 12 }}>
-                        <span style={{ padding: '4px 10px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', borderRadius: 6, fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', color: '#c4b5fd', textTransform: 'uppercase', border: '1px solid rgba(168,85,247,0.3)' }}>
-                            {event.department}
-                        </span>
-                    </div>
-                    {event.duration && (
-                        <div style={{ position: 'absolute', top: 12, right: 12 }}>
-                            <span style={{ padding: '4px 10px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', borderRadius: 6, fontSize: 9, fontWeight: 900, letterSpacing: '0.2em', color: '#67e8f9', textTransform: 'uppercase', border: '1px solid rgba(6,182,212,0.3)' }}>
-                                {event.duration}
-                            </span>
-                        </div>
-                    )}
-                    {isActive && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(to right, transparent, rgba(196,181,253,0.8), transparent)' }} />
-                    )}
+                {/* Banner */}
+                <div style={{ height: 148, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                    <StarBanner title={event.title} isActive={!!isActive} />
                 </div>
 
                 {/* Content */}
-                <div style={{ padding: 20, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                    <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 6, lineHeight: 1.3 }}>
-                        {event.title}
-                    </h3>
-                    <p style={{ color: '#6b7280', fontSize: 12, lineHeight: 1.6, marginBottom: 16, flexGrow: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {event.description}
-                    </p>
+                <div style={{
+                    padding: '10px 16px 14px',
+                    display: 'flex', flexDirection: 'column', flexGrow: 1,
+                    borderTop: '1px solid rgba(79,110,247,0.12)',
+                    background: 'linear-gradient(180deg, #0d0f2a 0%, #080a1c 100%)',
+                }}>
 
+                    {/* Date badge */}
                     {event.timeline && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-                            <svg style={{ width: 12, height: 12, color: 'rgba(167,139,250,0.6)', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span style={{ fontSize: 10, color: '#4b5563', letterSpacing: '0.05em' }}>{event.timeline}</span>
+                        <div style={{
+                            alignSelf: 'flex-start', marginBottom: 12,
+                            padding: '4px 13px', borderRadius: 6,
+                            background: 'rgba(4,5,20,0.7)',
+                            border: `1.5px solid ${event.day === 1 ? 'rgba(96,165,250,0.6)' : 'rgba(167,139,250,0.6)'}`,
+                            color: event.day === 1 ? '#93c5fd' : '#c4b5fd',
+                            fontSize: 10, fontWeight: 900, letterSpacing: '0.18em',
+                            fontFamily: "'Orbitron', monospace",
+                        }}>
+                            {event.timeline}
                         </div>
                     )}
 
+                    {/* Description */}
+                    <p style={{
+                        color: 'rgba(214,227,255,0.70)', fontSize: 12, lineHeight: 1.6,
+                        marginBottom: 10, flexGrow: 1,
+                        fontFamily: 'Georgia, serif',
+                        display: '-webkit-box', WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                    }}>
+                        {event.description}
+                    </p>
+
+                    {/* Prize Pool + Entry Fee */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+                        {[
+                            { label: 'Prize Pool', value: event.prizePool, icon: '🏆' },
+                            { label: 'Entry Fee', value: event.entryFee, icon: '🎟️' },
+                        ].map(({ label, value, icon }) => value ? (
+                            <div key={label} style={{
+                                padding: '8px 10px', borderRadius: 8,
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(99,120,245,0.16)',
+                            }}>
+                                <div style={{ fontSize: 9, letterSpacing: '0.18em', color: 'rgba(180,200,255,0.40)', fontFamily: "'Space Mono', monospace", marginBottom: 3 }}>
+                                    {icon} {label}
+                                </div>
+                                <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(214,227,255,0.85)', fontFamily: "'Orbitron', monospace", letterSpacing: '0.05em' }}>
+                                    {value}
+                                </div>
+                            </div>
+                        ) : null)}
+                    </div>
+
+                    {/* Explore button */}
                     {isActive ? (
                         <button
                             onClick={handleExplore}
                             onPointerDown={blockPropagation}
                             onPointerUp={blockPropagation}
                             style={{
-                                width: '100%', padding: '12px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                                background: 'linear-gradient(135deg, rgba(139,92,246,0.9), rgba(59,130,246,0.9))',
-                                color: 'white', fontWeight: 900, fontSize: 11, letterSpacing: '0.25em', textTransform: 'uppercase',
-                                boxShadow: isHovered ? '0 0 25px rgba(139,92,246,0.5)' : '0 0 10px rgba(139,92,246,0.2)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                transition: 'box-shadow 0.3s ease',
+                                width: '100%', padding: '15px 0', borderRadius: 10,
+                                background: 'linear-gradient(135deg, #1e1b4b 0%, #3730a3 35%, #4f46e5 65%, #6d28d9 100%)',
+                                border: '1px solid rgba(147,197,253,0.30)',
+                                color: '#e0f2ff', fontWeight: 900, fontSize: 13,
+                                letterSpacing: '0.38em', textTransform: 'uppercase',
+                                cursor: 'pointer', fontFamily: "'Orbitron', monospace",
+                                boxShadow: isHovered ? '0 0 28px rgba(79,70,229,0.70), 0 0 60px rgba(109,40,217,0.28)' : '0 0 12px rgba(79,70,229,0.28)',
+                                transition: 'box-shadow 0.25s, transform 0.15s',
+                                transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
                             }}
                         >
-                            Explore
-                            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: 14, height: 14 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
+                            EXPLORE →
                         </button>
                     ) : (
-                        <div style={{ width: '100%', padding: '12px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.15)', fontWeight: 900, fontSize: 11, letterSpacing: '0.25em', textTransform: 'uppercase', textAlign: 'center' }}>
-                            Explore
+                        <div style={{
+                            width: '100%', padding: '15px 0', textAlign: 'center',
+                            borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)',
+                            color: 'rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 700,
+                            letterSpacing: '0.38em', textTransform: 'uppercase',
+                            fontFamily: "'Orbitron', monospace",
+                        }}>
+                            EXPLORE →
                         </div>
                     )}
                 </div>

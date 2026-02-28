@@ -1,48 +1,42 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import EventDetail from '../components/EventDetail';
 import Navbar from '../components/Navbar';
 import { EVENTS } from '../data/mockData';
 
 export default function EventPage() {
-    const { slug }  = useParams();
-    const navigate  = useNavigate();
-    const event     = EVENTS.find(e => e.slug === slug);
+    const { slug } = useParams();
+    const navigate = useNavigate();
+    const event = EVENTS.find(e => e.slug.toLowerCase() === slug?.toLowerCase());
 
     if (!event) {
         return (
             <div style={{
-                background: '#04030A', minHeight: '100vh',
+                background: '#05070d', minHeight: '100vh',
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                color: 'white', textAlign: 'center',
-                padding: '40px 20px',
+                color: 'white', textAlign: 'center', padding: '24px 16px',
             }}>
-                <h1 style={{
-                    fontFamily: 'Syne, sans-serif',
-                    fontSize: 'clamp(24px, 5vw, 32px)',
-                    marginBottom: 16,
-                }}>
+                <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 32, marginBottom: 16 }}>
                     EVENT NOT FOUND
                 </h1>
-                <p style={{ color: '#9ca3af', marginBottom: 24, fontSize: 'clamp(13px, 3vw, 16px)' }}>
-                    Slug: <code style={{ color: '#f87171' }}>"{slug}"</code>
+                <p style={{ color: '#9ca3af', marginBottom: 8 }}>
+                    Slug: <span style={{ color: '#f87171' }}>"{slug}"</span>
                 </p>
-                <Link
-                    to="/"
-                    style={{
-                        color: '#a78bfa', fontWeight: 700,
-                        textDecoration: 'none',
-                        fontSize: 'clamp(14px, 3.5vw, 16px)',
-                    }}
+                <p style={{ color: '#6b7280', marginBottom: 24, fontSize: 13 }}>
+                    Available: {EVENTS.map(e => e.slug).join(', ')}
+                </p>
+                <button
+                    onClick={() => navigate('/')}
+                    style={{ color: '#a78bfa', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}
                 >
                     ← Return Home
-                </Link>
+                </button>
             </div>
         );
     }
 
     return (
-        <div style={{ background: '#04030A', minHeight: '100vh', overflowX: 'hidden' }}>
+        <div style={{ background: '#05070d', minHeight: '100vh' }}>
             <Navbar activeSection="" />
             <div style={{ paddingTop: 80 }}>
                 <EventDetail event={event} />
