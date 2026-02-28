@@ -17,7 +17,7 @@ export default function Domains() {
         onClick: () => navigate(`/domain/${domain.slug}`),
         render: (
             <div className="masonry-card">
-                <div className="masonry-card-top">{domain.icon}</div>
+                <div className="masonry-card-top"></div>
                 <div className="masonry-card-content">
                     <h3>{domain.name}</h3>
                     <p>{domain.description}</p>
@@ -39,9 +39,6 @@ export default function Domains() {
                 <div className="domains-swap-layout">
 
                     <div className="domains-swap-info">
-                        <p className="domains-desc">
-                            Explore each domain. Click to enter.
-                        </p>
 
                         <div className="domains-list">
                             {DOMAINS.length === 0 ? (
@@ -55,8 +52,9 @@ export default function Domains() {
                                         type="button"
                                         onClick={() => navigate(`/domain/${d.slug}`)}
                                         className="domains-list-btn"
+                                        style={{ fontSize: '2.5rem' }}
                                     >
-                                        {d.icon} {d.name}
+                                         {d.name}
                                     </button>
                                 ))
                             )}
