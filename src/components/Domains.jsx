@@ -30,16 +30,15 @@ export default function Domains() {
         <section className="section section--alt" id="events">
             <div className="section-inner">
 
-                <span className="section-label">// 02 — EVENTS</span>
-                <h2 className="text-h1">Your Arena.</h2>
+            <span className="section-label">// 02 — EVENTS</span>
+            <h1 className="domains-title" style={{ fontSize: "5.5rem" }}>
+                Pick your <span className="gradient-text" style={{ fontSize: "5.5rem" }}>battleground.</span>
+            </h1>
+
 
                 <div className="domains-swap-layout">
 
                     <div className="domains-swap-info">
-                        <h3 className="domains-title">
-                            Pick your <span className="gradient-text">battleground.</span>
-                        </h3>
-
                         <p className="domains-desc">
                             Explore each domain. Click to enter.
                         </p>
