@@ -26,6 +26,7 @@ const getRotationDelta = (steps, total) => {
     return -(steps / total) * Math.PI * 2;
 };
 
+// ── CarouselCard ──────────────────────────────────────────────────────────────
 function CarouselCard({ angleMv, isMobile, isActive, isAdjacent, onHover, children }) {
     const rx = isMobile ? RX_MOB : RX;
     const ry = isMobile ? RY_MOB : RY;
@@ -73,6 +74,7 @@ function CarouselCard({ angleMv, isMobile, isActive, isAdjacent, onHover, childr
     );
 }
 
+// ── DomainPage ────────────────────────────────────────────────────────────────
 export default function DomainPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
@@ -87,6 +89,7 @@ export default function DomainPage() {
     const isAnimating = useRef(false);
     const hoverFired = useRef(false);
     const dragStartX = useRef(0);
+    const isDragging = useRef(false); // ← prevents swipe from also firing a click
 
     const anglesRef = useRef(
         domainEvents.map((_, i) => useMotionValue(getInitialAngle(i, total)))
@@ -134,14 +137,26 @@ export default function DomainPage() {
         }, 100);
     };
 
+    // ── Pointer handlers — isDragging prevents swipe from also firing click ──
     const onPointerDown = (e) => {
+        isDragging.current = false;
         dragStartX.current = e.clientX;
         e.currentTarget.setPointerCapture(e.pointerId);
     };
+    const onPointerMove = (e) => {
+        if (Math.abs(e.clientX - dragStartX.current) > 8) {
+            isDragging.current = true;
+        }
+    };
     const onPointerUp = (e) => {
         const delta = e.clientX - dragStartX.current;
-        if (Math.abs(delta) > 50) delta < 0 ? goNext() : goPrev();
+        if (Math.abs(delta) > 50) {
+            delta < 0 ? goNext() : goPrev();
+        }
+        // reset after a tick so click handlers can check isDragging
+        setTimeout(() => { isDragging.current = false; }, 0);
     };
+    const onPointerCancel = () => { isDragging.current = false; };
 
     if (!domain) return null;
 
@@ -158,7 +173,7 @@ export default function DomainPage() {
                 flexDirection: isMobile ? 'column' : 'row',
             }}>
 
-                {/* ── Sidebar — desktop ── */}
+                {/* ── Sidebar — desktop only ── */}
                 {!isMobile && (
                     <div style={{
                         width: '33%', flexShrink: 0,
@@ -168,7 +183,6 @@ export default function DomainPage() {
                         position: 'relative', zIndex: 10,
                         paddingLeft: 40,
                     }}>
-                        {/* Back button — top left of sidebar */}
                         <button
                             onClick={goBackToEvents}
                             style={{
@@ -176,27 +190,16 @@ export default function DomainPage() {
                                 display: 'flex', alignItems: 'center', gap: 8,
                                 color: 'white',
                                 border: '1px solid rgba(255,255,255,0.2)',
-                                padding: '8px 16px',
-                                borderRadius: 100,
+                                padding: '8px 16px', borderRadius: 100,
                                 background: 'rgba(255,255,255,0.05)',
-                                cursor: 'pointer',
-                                fontSize: 10,
-                                letterSpacing: '0.3em',
-                                textTransform: 'uppercase',
-                                fontWeight: 700,
-                                transition: 'all 0.3s',
+                                cursor: 'pointer', fontSize: 10,
+                                letterSpacing: '0.3em', textTransform: 'uppercase',
+                                fontWeight: 700, transition: 'all 0.3s',
                             }}
-                            onMouseEnter={e => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
-                            }}
-                            onMouseLeave={e => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
                         >
-                            <ChevronLeft size={16} />
-                            Back
+                            <ChevronLeft size={16} /> Back
                         </button>
 
                         <motion.div
@@ -209,18 +212,16 @@ export default function DomainPage() {
                                 <h2 style={{
                                     fontFamily: 'Syne, sans-serif',
                                     fontSize: 28, fontWeight: 700,
-                                    letterSpacing: '0.3em',
-                                    color: 'white', textTransform: 'uppercase',
+                                    letterSpacing: '0.3em', color: 'white', textTransform: 'uppercase',
                                 }}>
                                     {domain.name}
                                 </h2>
                                 <p style={{
                                     fontFamily: 'Space Mono, monospace',
                                     fontSize: 11, color: 'rgba(255,255,255,0.3)',
-                                    letterSpacing: '0.4em', textTransform: 'uppercase',
-                                    marginTop: 16,
+                                    letterSpacing: '0.4em', textTransform: 'uppercase', marginTop: 16,
                                 }}>
-                                    {total} Data Points
+                                    {total} Events
                                 </p>
                             </div>
                         </motion.div>
@@ -239,15 +240,17 @@ export default function DomainPage() {
                         minHeight: isMobile ? 'calc(100vh - 80px)' : undefined,
                     }}
                     onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
+                    onPointerCancel={onPointerCancel}
                 >
-                    {/* Mobile top bar */}
+
+                    {/* ── Mobile top bar ── */}
                     {isMobile && (
                         <div style={{
                             position: 'absolute', top: 0, left: 0, right: 0,
                             zIndex: 30, pointerEvents: 'none',
                         }}>
-                            {/* Back — top left */}
                             <button
                                 onClick={goBackToEvents}
                                 style={{
@@ -261,11 +264,9 @@ export default function DomainPage() {
                                     transition: 'color 0.2s',
                                 }}
                             >
-                                <ChevronLeft size={16} />
-                                Back
+                                <ChevronLeft size={16} /> Back
                             </button>
 
-                            {/* Domain name — centered */}
                             <div style={{
                                 display: 'flex', justifyContent: 'center',
                                 paddingTop: 16, paddingBottom: 12,
@@ -274,8 +275,8 @@ export default function DomainPage() {
                                 <h1 style={{
                                     fontFamily: 'Syne, sans-serif',
                                     fontSize: 18, fontWeight: 700,
-                                    letterSpacing: '0.25em',
-                                    color: 'white', textTransform: 'uppercase',
+                                    letterSpacing: '0.25em', color: 'white',
+                                    textTransform: 'uppercase',
                                     textShadow: '0 0 20px rgba(255,255,255,0.3)',
                                 }}>
                                     {domain.name}
@@ -284,12 +285,20 @@ export default function DomainPage() {
                         </div>
                     )}
 
-                    {/* Cards */}
-                    <div style={{ flex: 1, width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {/* ── Cards ── */}
+                    <div style={{
+                        flex: 1, width: '100%', position: 'relative',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        // push cards down on mobile so they clear the top bar
+                        paddingTop: isMobile ? 64 : 0,
+                    }}>
                         <div style={{ position: 'relative', width: 1, height: 1 }}>
                             {domainEvents.map((event, idx) => {
                                 const isActive = idx === activeIdx;
-                                const dist = Math.abs(Math.min(Math.abs(idx - activeIdx), total - Math.abs(idx - activeIdx)));
+                                const dist = Math.min(
+                                    Math.abs(idx - activeIdx),
+                                    total - Math.abs(idx - activeIdx)
+                                );
                                 return (
                                     <CarouselCard
                                         key={event.id}
@@ -304,21 +313,35 @@ export default function DomainPage() {
                                             setTimeout(() => { hoverFired.current = false; }, 800);
                                         }}
                                     >
-                                        <EventCard event={event} isActive={isActive} />
+                                        <EventCard
+                                            event={event}
+                                            isActive={isActive}
+                                            isDragging={isDragging} // pass ref so EventCard can block nav on swipe
+                                        />
                                     </CarouselCard>
                                 );
                             })}
                         </div>
                     </div>
 
-                    {/* Navigation Hub — dots + sector label */}
+                    {/* ── Navigation hub — dots wrap on mobile so they never overflow ── */}
                     <div style={{
-                        height: 112, width: '100%',
+                        width: '100%',
                         display: 'flex', flexDirection: 'column',
                         alignItems: 'center', justifyContent: 'flex-end',
-                        zIndex: 40, paddingBottom: 16,
+                        zIndex: 40,
+                        paddingBottom: isMobile ? 12 : 16,
+                        paddingTop: 8,
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '12px 24px' }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexWrap: 'wrap',          // ← wraps on mobile when events > 6
+                            gap: isMobile ? 10 : 24,
+                            padding: '8px 24px',
+                            maxWidth: '100%',
+                        }}>
                             {domainEvents.map((_, idx) => (
                                 <button
                                     key={idx}
@@ -326,15 +349,17 @@ export default function DomainPage() {
                                     style={{
                                         position: 'relative',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        width: 24, height: 24,
+                                        width: isMobile ? 20 : 24,
+                                        height: isMobile ? 20 : 24,
                                         background: 'none', border: 'none', cursor: 'pointer',
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <div style={{
                                         borderRadius: '50%',
                                         transition: 'all 0.3s',
-                                        width: idx === activeIdx ? 10 : 6,
-                                        height: idx === activeIdx ? 10 : 6,
+                                        width: idx === activeIdx ? (isMobile ? 8 : 10) : (isMobile ? 5 : 6),
+                                        height: idx === activeIdx ? (isMobile ? 8 : 10) : (isMobile ? 5 : 6),
                                         background: idx === activeIdx ? 'white' : 'rgba(255,255,255,0.7)',
                                         boxShadow: idx === activeIdx ? '0 0 20px rgba(255,255,255,1)' : 'none',
                                     }} />
@@ -352,10 +377,12 @@ export default function DomainPage() {
                                 </button>
                             ))}
                         </div>
+
                         <p style={{
-                            marginTop: 8,
+                            marginTop: 4,
                             fontFamily: 'Space Mono, monospace',
-                            fontSize: 8, color: 'rgba(255,255,255,0.1)',
+                            fontSize: isMobile ? 7 : 8,
+                            color: 'rgba(255,255,255,0.1)',
                             letterSpacing: '0.6em', textTransform: 'uppercase',
                         }}>
                             Sector {activeIdx + 1} // {total}

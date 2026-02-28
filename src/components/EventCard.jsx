@@ -126,7 +126,7 @@ function StarBanner({ title, isActive }) {
 }
 
 // ── EventCard ─────────────────────────────────────────────────────────────────
-export default function EventCard({ event, isActive }) {
+export default function EventCard({ event, isActive, isDragging }) {
     const navigate = useNavigate();
     const cardRef = useRef(null);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -135,6 +135,8 @@ export default function EventCard({ event, isActive }) {
     const handleExplore = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        // Don't navigate if the user was swiping the carousel
+        if (isDragging?.current) return;
         navigate(`/event/${event.slug}`);
     };
 
