@@ -210,7 +210,7 @@ export const EVENTS = [
     description: 'Conceptualize and construct a model bridge using restricted materials — structural efficiency and load-bearing performance decide the winner.',
     longDescription: 'A structural design competition where teams conceptualize and construct a model bridge using restricted materials. Evaluation focuses on structural efficiency, innovation, and load-bearing performance.',
     rules: ['Open to UG Civil Engineering students up to 3rd year.', 'Only specified materials are allowed.', 'Use of unauthorized materials will result in disqualification.', 'Judges\' decisions are final.'],
-    coordinators: [{ name: 'Yashaswini N K', phone: 'TBA' }, { name: 'Bharath', phone: 'TBA' }],
+    coordinators: [{ name: 'Yashaswini N K', phone: '7483464012' }, { name: 'Bharath', phone: '8073355828' }],
   },
   {
     id: 'ce4', slug: 'design-decide-dominate', title: 'Design. Decide. Dominate.',
@@ -220,7 +220,7 @@ export const EVENTS = [
     description: 'Compete across analytical rounds that test your CAD skills and core civil engineering concepts.',
     longDescription: 'The flagship technical competition of the Civil Engineering Department, designed to test proficiency in CAD and core civil concepts. Participants compete through multiple analytical rounds culminating in a final technical showdown.',
     rules: ['Open to all Undergraduate Civil Engineering students.', 'Registration must be completed prior to the event.', 'Any form of malpractice will result in disqualification.', 'Judges\' decisions are final.'],
-    coordinators: [{ name: 'Preksha', phone: 'TBA' }, { name: 'Vikas C', phone: 'TBA' }],
+    coordinators: [{ name: 'Preksha', phone: '6362074779 ' }, { name: 'Vikas C', phone: '8660402532' }],
   },
   {
     id: 'ce5', slug: 'circuitrix', title: 'Circuitrix',
