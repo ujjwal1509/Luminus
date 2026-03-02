@@ -9,12 +9,23 @@ import Register from './components/Register';
 import NotFoundPage from './pages/NotFoundPage';
 import luminusLogo from './assets/luminus_logo.png';
 
+
+
 const DomainPage = lazy(() => import('./pages/DomainPage'));
 const EventPage = lazy(() => import('./pages/EventPage'));
 
 // ── Home layout ───────────────────────────────────────────────────────────────
 function HomePage() {
   const [activeSection, setActiveSection] = useState('home');
+  useEffect(() => {
+  const target = sessionStorage.getItem('scrollTo');
+  if (target) {
+    sessionStorage.removeItem('scrollTo');
+    setTimeout(() => {
+      document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }
+}, []);
 
   useEffect(() => {
     const revealObs = new IntersectionObserver(
