@@ -1,11 +1,62 @@
+import gamingIcon from '../assets/Gaming and combat.png';
+import cyberIcon from '../assets/cyber security.png';
+import codingIcon from '../assets/code and logic.png';
+import aiIcon from '../assets/AI.png';
+import dataScienceIcon from '../assets/data Science.png';
+import coreEngIcon from '../assets/core Engineering.png';
+import quizIcon from '../assets/Quiz and ideas.png';
+
+
 export const DOMAINS = [
-  { id: '1', slug: 'gaming-combat', name: 'Gaming & Combat', description: 'Prove your reflexes and strategic dominance in high-octane competitive arenas.', icon: '🎮' },
-  { id: '2', slug: 'cybersecurity', name: 'Cybersecurity', description: 'Infiltrate, exploit, and defend — enter the shadow realm of digital warfare.', icon: '🔐' },
-  { id: '3', slug: 'coding-logic', name: 'Coding & Logic', description: 'Elite challenges for algorithm masters, debuggers, and code escape artists.', icon: '💻' },
-  { id: '4', slug: 'ai', name: 'AI', description: 'Harness the power of generative intelligence and outsmart the machines.', icon: '🤖' },
-  { id: '5', slug: 'data-science', name: 'Data Science', description: 'Decode the noise, reveal the signal — data is your weapon.', icon: '📊' },
-  { id: '6', slug: 'core-engineering', name: 'Core Engineering', description: 'From circuits to cities — build, innovate, and engineer the future.', icon: '⚙️' },
-  { id: '7', slug: 'quiz-idea', name: 'Quiz & Idea', description: 'Battle of brains and bold visions — pitch, quiz, and dominate the idea space.', icon: '💡' },
+  { 
+    id: '1', 
+    slug: 'gaming-combat', 
+    name: 'Gaming & Combat', 
+    description: 'Prove your reflexes and strategic dominance in high-octane competitive arenas.', 
+    icon: gamingIcon // Use the imported variable
+  },
+  { 
+    id: '2', 
+    slug: 'cybersecurity', 
+    name: 'Cybersecurity', 
+    description: 'Infiltrate, exploit, and defend — enter the shadow realm of digital warfare.', 
+    icon: cyberIcon 
+  },
+  { 
+    id: '3', 
+    slug: 'coding-logic', 
+    name: 'Coding & Logic', 
+    description: 'Elite challenges for algorithm masters, debuggers, and code escape artists.', 
+    icon: codingIcon 
+  },
+  { 
+    id: '4', 
+    slug: 'ai', 
+    name: 'AI', 
+    description: 'Harness the power of generative intelligence and outsmart the machines.', 
+    icon: aiIcon 
+  },
+  { 
+    id: '5', 
+    slug: 'data-science', 
+    name: 'Data Science', 
+    description: 'Decode the noise, reveal the signal — data is your weapon.', 
+    icon: dataScienceIcon 
+  },
+  { 
+    id: '6', 
+    slug: 'core-engineering', 
+    name: 'Core Engineering', 
+    description: 'From circuits to cities — build, innovate, and engineer the future.', 
+    icon: coreEngIcon 
+  },
+  { 
+    id: '7', 
+    slug: 'quiz-idea', 
+    name: 'Quiz & Idea', 
+    description: 'Battle of brains and bold visions — pitch, quiz, and dominate the idea space.', 
+    icon: quizIcon 
+  },
 ];
 
 export const EVENTS = [
