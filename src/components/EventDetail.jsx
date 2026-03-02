@@ -52,6 +52,15 @@ export default function EventDetail({ event }) {
         { label: 'Entry Fee', value: event.entryFee || 'Free' },
     ];
 
+    // Navigate back to the specific domain page this event belongs to
+    const handleBack = () => {
+        if (event.domainSlug) {
+            navigate(`/domain/${event.domainSlug}`);
+        } else {
+            navigate(-1);
+        }
+    };
+
     return (
         <>
             <style>{`
@@ -239,7 +248,7 @@ export default function EventDetail({ event }) {
 
                 {/* Back */}
                 <div style={{ marginBottom: 32 }}>
-                    <button onClick={() => navigate(-1)} style={{
+                    <button onClick={handleBack} style={{
                         display: 'flex', alignItems: 'center', gap: 8,
                         background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(255,255,255,0.3)',
                         padding: '10px 20px', borderRadius: 100,
